@@ -122,25 +122,29 @@ public class SecurityService {
         sensor.setActive(active);
         securityRepository.updateSensor(sensor);
     }
-    public AlarmStatus changeAlarmStatus(Sensor sensor, Boolean active)
-    {
-        AlarmStatus alarmStatus = AlarmStatus.PENDING_ALARM;
-        if(!sensor.getActive() && active) {
-            handleSensorActivated();
-            securityRepository.setAlarmStatus(alarmStatus);
-            return alarmStatus;
-        } else if (sensor.getActive() && !active) {
-            handleSensorDeactivated();
 
-        }
-        sensor.setActive(active);
-        return alarmStatus;
-    }
-    public AlarmStatus justToSee()
+    public AlarmStatus changeToPending(Sensor sensorStatus, ArmingStatus armingStatus)
     {
-        AlarmStatus alarmStatus = AlarmStatus.PENDING_ALARM;
-        return alarmStatus;
+        if(sensorStatus.getActive() && armingStatus.equals(ArmingStatus.ARMED_HOME) ) {
+            securityRepository.pendingAlarmStatus(sensorStatus, armingStatus);
+            return AlarmStatus.PENDING_ALARM;
+        } else if (sensorStatus.getActive() && armingStatus.equals(ArmingStatus.ARMED_AWAY)) {
+            securityRepository.pendingAlarmStatus(sensorStatus, armingStatus);
+            return AlarmStatus.PENDING_ALARM;
+        }
+        return AlarmStatus.NO_ALARM;
     }
+//    public AlarmStatus justToSee(Sensor sensorStatus)
+//    {
+//        AlarmStatus alarmStatus = AlarmStatus.PENDING_ALARM;
+//        if(sensorStatus.getActive())
+//        {
+//            return AlarmStatus.NO_ALARM;
+//        }else
+//        {
+//            return securityRepository.justToSee(sensorStatus);
+//        }
+//    }
 
     /**
      * Send an image to the SecurityService for processing. The securityService will use its provided

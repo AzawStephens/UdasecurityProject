@@ -89,4 +89,14 @@ public class PretendDatabaseSecurityRepositoryImpl implements SecurityRepository
     public ArmingStatus getArmingStatus() {
         return armingStatus;
     }
+
+    @Override
+    public AlarmStatus justToSee(Sensor sensor) {
+        return AlarmStatus.PENDING_ALARM;
+    }
+
+    @Override
+    public AlarmStatus pendingAlarmStatus(Sensor sensor, ArmingStatus armingStatus) {
+        return null;
+    }
 }

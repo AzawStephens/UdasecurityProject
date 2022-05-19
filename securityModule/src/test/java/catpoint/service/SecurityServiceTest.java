@@ -16,9 +16,10 @@ public class SecurityServiceTest {
 
     @Mock
     private SecurityRepository repository;
-    private SecurityService securityService;
-    private Sensor sensor;
-    private Boolean active = true;
+    private SecurityService securityService =null;
+    private boolean active = true;
+    private Sensor sensor = new Sensor();
+
     private ImageServiceInterface imageServiceInterface;
 
     @BeforeEach
@@ -26,13 +27,15 @@ public class SecurityServiceTest {
     {
             securityService = new SecurityService(repository);
     }
-
     @Test
     void pendingStatus_alarmIsArmed_SensorIsActivated_SystemReturnsPendingStatus()
     {
-        when(securityService.justToSee()).thenReturn(AlarmStatus.PENDING_ALARM);
-        Assertions.assertEquals(AlarmStatus.PENDING_ALARM, securityService.justToSee());
-
+        sensor.setActive(active);
+        ArmingStatus armingStatusHome = ArmingStatus.ARMED_HOME;
+        ArmingStatus armingStatusAway = ArmingStatus.ARMED_AWAY;
+        when(repository.pendingAlarmStatus(sensor, armingStatusHome)).thenReturn(AlarmStatus.PENDING_ALARM);
+        lenient().when(repository.pendingAlarmStatus(sensor, armingStatusAway)).thenReturn(AlarmStatus.PENDING_ALARM);
+        Assertions.assertEquals(AlarmStatus.PENDING_ALARM, securityService.changeToPending(sensor, armingStatusHome));
+        verify(repository).pendingAlarmStatus(sensor,armingStatusHome);
     }
-
 }

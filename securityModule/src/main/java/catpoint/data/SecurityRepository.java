@@ -14,6 +14,8 @@ public interface SecurityRepository {
     Set<Sensor> getSensors();
     AlarmStatus getAlarmStatus();
     ArmingStatus getArmingStatus();
+    AlarmStatus justToSee(Sensor sensor);
+    AlarmStatus pendingAlarmStatus(Sensor sensor, ArmingStatus armingStatus);
 
 
 }
