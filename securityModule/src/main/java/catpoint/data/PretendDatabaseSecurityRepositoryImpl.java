@@ -109,4 +109,9 @@ public class PretendDatabaseSecurityRepositoryImpl implements SecurityRepository
     public AlarmStatus noAlarmStatus(AlarmStatus alarmStatus, Set<Sensor> sensors) {
         return AlarmStatus.NO_ALARM;
     }
+
+    @Override
+    public AlarmStatus sensorAlreadyActivated(Sensor sensor, boolean wishToActivate, AlarmStatus alarmStatus) {
+        return AlarmStatus.ALARM;
+    }
 }

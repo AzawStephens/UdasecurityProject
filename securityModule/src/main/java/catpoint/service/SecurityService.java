@@ -87,7 +87,7 @@ public class SecurityService {
     /**
      * Internal method for updating the alarm status when a sensor has been activated.
      */
-    private void handleSensorActivated() {
+    private void handleSensorActivated(Sensor sensor, ArmingStatus armingStatus) {
         if(securityRepository.getArmingStatus() == ArmingStatus.DISARMED) {
             return; //no problem if the system is disarmed
         }
@@ -171,7 +171,19 @@ public class SecurityService {
         securityRepository.noAlarmStatus(alarmStatus,sensors);
         return AlarmStatus.PENDING_ALARM;
     }
-   // public AlarmStatus sensorAlreadyActivated(Sensor sensor)
+   public AlarmStatus sensorAlreadyActivated(Sensor sensor, boolean wishToActivate, AlarmStatus alarmStatus)
+   {
+       boolean alreadyActive = sensor.getActive();
+       if(alreadyActive && wishToActivate && alarmStatus.equals(AlarmStatus.PENDING_ALARM))
+       {
+           securityRepository.sensorAlreadyActivated(sensor,wishToActivate,alarmStatus);
+            return AlarmStatus.ALARM;
+       }
+
+       return AlarmStatus.NO_ALARM;
+   }
+
+
 
     /**
      * Send an image to the SecurityService for processing. The securityService will use its provided

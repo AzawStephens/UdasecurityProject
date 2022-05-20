@@ -25,6 +25,8 @@ public class SecurityServiceTest {
     @Mock
     private SecurityRepository repository;
     private SecurityService securityService =null;
+    @Mock
+    private Sensor sensorMock;
     private boolean active = true;
     private Sensor sensor = new Sensor();
     private ArmingStatus armingStatusHome = ArmingStatus.ARMED_HOME;
@@ -37,6 +39,8 @@ public class SecurityServiceTest {
     void init()
     {
             securityService = new SecurityService(repository);
+            sensorMock.setName("Back Door");
+            sensorMock.setSensorType(SensorType.DOOR);
     }
 
 
@@ -87,11 +91,17 @@ public class SecurityServiceTest {
     @Test
     void sensorAlreadyActivated_SensorSetToActiveAndSystemPending_ReturnAlarmState()
     {
-        Sensor sensor = new Sensor("Back Window", SensorType.WINDOW);
-        sensor.setActive(true);
+       Sensor sensor = new Sensor("Back Window", SensorType.WINDOW);
+       sensor.setActive(true);
+        boolean wishToActivate = true;
+        when(repository.sensorAlreadyActivated(sensor,wishToActivate,pendingAlarmStatus)).thenReturn(AlarmStatus.ALARM);
+        Assertions.assertEquals(AlarmStatus.ALARM,securityService.sensorAlreadyActivated(sensor,wishToActivate,pendingAlarmStatus));
+        verify(repository).sensorAlreadyActivated(sensor, wishToActivate,pendingAlarmStatus);
+    }
+    @Test
+    void noChangesToAlarm_SensorIsNotActiveAlready_ReturnNoChange()
+    {
 
-        
-       // Assertions.assertEquals(AlarmStatus.ALARM,securityService.);
     }
 
 }
