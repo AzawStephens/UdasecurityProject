@@ -178,6 +178,10 @@ public class SecurityService {
        {
            securityRepository.sensorAlreadyActivated(sensor,wishToActivate,alarmStatus);
             return AlarmStatus.ALARM;
+       }else if(!alreadyActive && !wishToActivate)
+       {
+           securityRepository.sensorAlreadyActivated(sensor,wishToActivate,alarmStatus);
+           return alarmStatus;
        }
 
        return AlarmStatus.NO_ALARM;

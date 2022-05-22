@@ -46,7 +46,7 @@ public class SecurityServiceTest {
 
     @ParameterizedTest
     @EnumSource(value = ArmingStatus.class, names = {"ARMED_HOME","ARMED_AWAY"})
-    void pendingStatus_alarmIsArmed_SensorIsActivated_SystemReturnsPendingStatus(ArmingStatus armingStatus)
+    void pendingStatus_alarmIsArmed_SensorIsActivated_SystemReturnsPendingStatus(ArmingStatus armingStatus) //TEST 1
     {
         sensor.setActive(active);
         when(repository.pendingAlarmStatus(sensor, armingStatus)).thenReturn(AlarmStatus.PENDING_ALARM);
@@ -56,7 +56,7 @@ public class SecurityServiceTest {
     }
     @ParameterizedTest
     @EnumSource(value = ArmingStatus.class, names = {"ARMED_HOME", "ARMED_AWAY"})
-    void setStatusToAlarm_AlarmIsArmed_SensorIsActivated_SystemAlreadyPending_ReturnsAlamStatus(ArmingStatus armingStatus)
+    void setStatusToAlarm_AlarmIsArmed_SensorIsActivated_SystemAlreadyPending_ReturnsAlamStatus(ArmingStatus armingStatus) //TEST 2
     {
         sensor.setActive(active);
         when(repository.alarmStatus(armingStatus,sensor,pendingAlarmStatus)).thenReturn(AlarmStatus.ALARM);
@@ -65,7 +65,7 @@ public class SecurityServiceTest {
         System.out.println("Alarm status was returned");
     }
     @Test
-    void setStatusToNoAlarm_AlarmInPendingMode_NoSensorsAreActive_ReturnNoAlarmStatus()
+    void setStatusToNoAlarm_AlarmInPendingMode_NoSensorsAreActive_ReturnNoAlarmStatus() //TEST 3
     {
 
         Sensor sensor1 = new Sensor("Front Door",SensorType.DOOR);
@@ -89,7 +89,7 @@ public class SecurityServiceTest {
 //
 //    }
     @Test
-    void sensorAlreadyActivated_SensorSetToActiveAndSystemPending_ReturnAlarmState()
+    void sensorAlreadyActivated_SensorSetToActiveAndSystemPending_ReturnAlarmState() //TEST 5
     {
        Sensor sensor = new Sensor("Back Window", SensorType.WINDOW);
        sensor.setActive(true);
@@ -99,9 +99,15 @@ public class SecurityServiceTest {
         verify(repository).sensorAlreadyActivated(sensor, wishToActivate,pendingAlarmStatus);
     }
     @Test
-    void noChangesToAlarm_SensorIsNotActiveAlready_ReturnNoChange()
+    void noChangesToAlarm_SensorIsNotActiveAlready_ReturnNoChange() //TEST 6
     {
-
+        Sensor sensor = new Sensor("Back Window", SensorType.WINDOW);
+        sensor.setActive(false);
+        boolean wishToActivate = false;
+        when(repository.sensorAlreadyActivated(sensor,wishToActivate,pendingAlarmStatus)).thenReturn(pendingAlarmStatus);
+        Assertions.assertEquals(pendingAlarmStatus,securityService.sensorAlreadyActivated(sensor,wishToActivate,pendingAlarmStatus));
+        verify(repository).sensorAlreadyActivated(sensor, wishToActivate,pendingAlarmStatus);
     }
+   // @Test
 
 }
