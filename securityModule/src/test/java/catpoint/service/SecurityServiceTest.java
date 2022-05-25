@@ -88,7 +88,7 @@ public class SecurityServiceTest {
 //    }
 
    @ParameterizedTest
-   @EnumSource(value = AlarmStatus.class, names = {"ALARM", "PENDING_ALARM"})
+   @EnumSource(value = AlarmStatus.class, names = {"ALARM", "PENDING_ALARM"}) //TEST 4
     void alarmActive_ChangeInSensorMakesNoChanges_ReturnNoChangesToAlarmStatus(AlarmStatus alarmStatus)
     {
             Sensor sensor = new Sensor();
