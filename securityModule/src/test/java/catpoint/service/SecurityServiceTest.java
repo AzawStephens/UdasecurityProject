@@ -3,9 +3,11 @@ package catpoint.service;
 import catpoint.data.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,12 +27,9 @@ public class SecurityServiceTest {
     @Mock
     private SecurityRepository repository;
     private SecurityService securityService =null;
-    @Mock
-    private Sensor sensorMock;
+
     private boolean active = true;
     private Sensor sensor = new Sensor();
-    private ArmingStatus armingStatusHome = ArmingStatus.ARMED_HOME;
-    private ArmingStatus armingStatusAway = ArmingStatus.ARMED_AWAY;
     private AlarmStatus pendingAlarmStatus = AlarmStatus.PENDING_ALARM;
 
     private ImageServiceInterface imageServiceInterface;
@@ -39,8 +38,6 @@ public class SecurityServiceTest {
     void init()
     {
             securityService = new SecurityService(repository);
-            sensorMock.setName("Back Door");
-            sensorMock.setSensorType(SensorType.DOOR);
     }
 
 
@@ -54,6 +51,7 @@ public class SecurityServiceTest {
         verify(repository).pendingAlarmStatus(sensor,armingStatus);
         System.out.println("Pending status was returned");
     }
+
     @ParameterizedTest
     @EnumSource(value = ArmingStatus.class, names = {"ARMED_HOME", "ARMED_AWAY"})
     void setStatusToAlarm_AlarmIsArmed_SensorIsActivated_SystemAlreadyPending_ReturnsAlamStatus(ArmingStatus armingStatus) //TEST 2
@@ -88,6 +86,18 @@ public class SecurityServiceTest {
 //        );
 //
 //    }
+
+   @ParameterizedTest
+   @EnumSource(value = AlarmStatus.class, names = {"ALARM", "PENDING_ALARM"})
+    void alarmActive_ChangeInSensorMakesNoChanges_ReturnNoChangesToAlarmStatus(AlarmStatus alarmStatus)
+    {
+            Sensor sensor = new Sensor();
+            sensor.setActive(false);
+            when(repository.noChangeToAlarm(alarmStatus, sensor, sensor.getActive())).thenReturn(alarmStatus);
+            Assertions.assertEquals(alarmStatus, securityService.returnSameAlarm(alarmStatus,sensor,sensor.getActive()));
+
+    }
+
     @Test
     void sensorAlreadyActivated_SensorSetToActiveAndSystemPending_ReturnAlarmState() //TEST 5
     {

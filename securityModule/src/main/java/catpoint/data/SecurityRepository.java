@@ -1,5 +1,7 @@
 package catpoint.data;
 
+import service.ImageServiceInterface;
+
 import java.util.List;
 import java.util.Set;
 
@@ -19,6 +21,8 @@ public interface SecurityRepository {
     AlarmStatus alarmStatus(ArmingStatus armingStatus, Sensor sensor, AlarmStatus alarmStatus);
     AlarmStatus noAlarmStatus(AlarmStatus alarmStatus, Set<Sensor> sensors);
     AlarmStatus sensorAlreadyActivated(Sensor sensor, boolean wishToActivate, AlarmStatus alarmStatus);
+    AlarmStatus noChangeToAlarm(AlarmStatus alarmStatus, Sensor sensor, Boolean activationStatus);
+    AlarmStatus catDetectedAlarmStatus(ImageServiceInterface imageService, ArmingStatus armedHome);
 
 
 }

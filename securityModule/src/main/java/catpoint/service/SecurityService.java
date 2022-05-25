@@ -7,6 +7,7 @@ import catpoint.data.SecurityRepository;
 import catpoint.data.Sensor;
 import service.ImageServiceInterface;
 
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.util.HashSet;
 import java.util.Set;
@@ -107,22 +108,9 @@ public class SecurityService {
         }
     }
 
-    /**
-     * Change the activation status for the specified sensor and update alarm status if necessary.
-     * @param sensor
-     * @param active
-     */
-    public void changeSensorActivationStatus(Sensor sensor, Boolean active) {
-        if (getAlarmStatus() == AlarmStatus.PENDING_ALARM && !sensor.getActive()) {
-            handleSensorDeactivated();
-        } else if (getAlarmStatus() == AlarmStatus.ALARM && getArmingStatus() == ArmingStatus.DISARMED) {
-            handleSensorDeactivated();
-        }
-        sensor.setActive(active);
-        securityRepository.updateSensor(sensor);
-    }
 
-    public AlarmStatus changeToPending(Sensor sensorStatus, ArmingStatus armingStatus)
+
+    public AlarmStatus changeToPending(Sensor sensorStatus, ArmingStatus armingStatus) //Works with test 1
     {
         if(sensorStatus.getActive() && armingStatus.equals(ArmingStatus.ARMED_HOME) ) {
            securityRepository.pendingAlarmStatus(sensorStatus, armingStatus);
@@ -133,9 +121,8 @@ public class SecurityService {
         }
         return AlarmStatus.NO_ALARM;
     }
-    public AlarmStatus changeToAlarm(ArmingStatus armingStatus, Sensor sensor, AlarmStatus alarmStatus)
+    public AlarmStatus changeToAlarm(ArmingStatus armingStatus, Sensor sensor, AlarmStatus alarmStatus) //Works with test 2
     {
-        boolean alreadyActivated = true;
 
         switch (armingStatus)
         {
@@ -151,27 +138,56 @@ public class SecurityService {
 
         return AlarmStatus.NO_ALARM;
     }
-    public AlarmStatus noAlarmSet(AlarmStatus alarmStatus, Set<Sensor> sensors)
+    public AlarmStatus noAlarmSet(AlarmStatus alarmStatus, Set<Sensor> sensors) //Works with test 3
     {
-        boolean active = true;
         for(Sensor sensor: sensors)
         {
             if(sensor.getActive()) //if a sensor is active
             {
                 return  AlarmStatus.PENDING_ALARM;
             }
-
         }
         if(alarmStatus.equals(AlarmStatus.PENDING_ALARM))
         {
             securityRepository.noAlarmStatus(alarmStatus,sensors);
             return AlarmStatus.NO_ALARM;
         }
-
         securityRepository.noAlarmStatus(alarmStatus,sensors);
         return AlarmStatus.PENDING_ALARM;
     }
-   public AlarmStatus sensorAlreadyActivated(Sensor sensor, boolean wishToActivate, AlarmStatus alarmStatus)
+
+
+    public AlarmStatus returnSameAlarm(AlarmStatus alarmStatus, Sensor sensor, boolean activationStatus) //Works with test 4
+    {
+        switch (alarmStatus)
+        {
+            case ALARM, PENDING_ALARM -> {
+                securityRepository.noChangeToAlarm(alarmStatus, sensor,activationStatus);
+                return alarmStatus;}
+            default -> {
+                securityRepository.noChangeToAlarm(alarmStatus, sensor,activationStatus);
+                return AlarmStatus.NO_ALARM;
+            }
+        }
+}
+
+    /**
+     * Change the activation status for the specified sensor and update alarm status if necessary.
+     * @param sensor
+     * @param active
+     */
+    public void changeSensorActivationStatus(Sensor sensor, Boolean active) { //Works with test 4 GUI PORTION
+        if (getAlarmStatus() == AlarmStatus.PENDING_ALARM && !sensor.getActive()) {
+            handleSensorDeactivated();
+        } else if (getAlarmStatus() == AlarmStatus.ALARM && getArmingStatus() == ArmingStatus.DISARMED) {
+
+            handleSensorDeactivated();
+        }
+
+        sensor.setActive(active);
+        securityRepository.updateSensor(sensor);
+    }
+   public AlarmStatus sensorAlreadyActivated(Sensor sensor, boolean wishToActivate, AlarmStatus alarmStatus) //Works with test 5
    {
        boolean alreadyActive = sensor.getActive();
        if(alreadyActive && wishToActivate && alarmStatus.equals(AlarmStatus.PENDING_ALARM))
@@ -186,6 +202,10 @@ public class SecurityService {
 
        return AlarmStatus.NO_ALARM;
    }
+//   public AlarmStatus alarmStatusCatFound(ImageServiceInterface imageService, ArmingStatus armingStatus)
+//   {
+//       if(imageService.imageContainsCat( ,1.0))
+//   }
 
 
 

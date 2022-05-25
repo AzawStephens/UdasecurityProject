@@ -2,6 +2,7 @@ package catpoint.data;
 
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
+import service.ImageServiceInterface;
 
 import java.lang.reflect.Type;
 import java.util.Set;
@@ -112,6 +113,16 @@ public class PretendDatabaseSecurityRepositoryImpl implements SecurityRepository
 
     @Override
     public AlarmStatus sensorAlreadyActivated(Sensor sensor, boolean wishToActivate, AlarmStatus alarmStatus) {
+        return AlarmStatus.ALARM;
+    }
+
+    @Override
+    public AlarmStatus noChangeToAlarm(AlarmStatus alarmStatus, Sensor sensor, Boolean activationStatus) {
+        return alarmStatus;
+    }
+
+    @Override
+    public AlarmStatus catDetectedAlarmStatus(ImageServiceInterface imageService, ArmingStatus armedHome) {
         return AlarmStatus.ALARM;
     }
 }
