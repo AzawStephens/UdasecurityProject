@@ -88,13 +88,15 @@ public class SecurityServiceTest {
 //    }
 
    @ParameterizedTest
-   @EnumSource(value = AlarmStatus.class, names = {"ALARM", "PENDING_ALARM"}) //TEST 4
-    void alarmActive_ChangeInSensorMakesNoChanges_ReturnNoChangesToAlarmStatus(AlarmStatus alarmStatus)
+   @ValueSource(booleans = {true, false}) //TEST 4
+    void alarmActive_ChangeInSensorMakesNoChanges_ReturnNoChangesToAlarmStatus(boolean status)
     {
-            Sensor sensor = new Sensor();
-            sensor.setActive(false);
-            when(repository.noChangeToAlarm(alarmStatus, sensor, sensor.getActive())).thenReturn(alarmStatus);
-            Assertions.assertEquals(alarmStatus, securityService.returnSameAlarm(alarmStatus,sensor,sensor.getActive()));
+
+
+            when(repository.getAlarmStatus()).thenReturn(AlarmStatus.ALARM);
+            securityService.changeSensorActivationStatus(sensor, status);
+            verify(repository, never()).setAlarmStatus(any(AlarmStatus.class));
+
 
     }
 

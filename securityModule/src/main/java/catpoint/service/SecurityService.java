@@ -157,19 +157,7 @@ public class SecurityService {
     }
 
 
-    public AlarmStatus returnSameAlarm(AlarmStatus alarmStatus, Sensor sensor, boolean activationStatus) //Works with test 4
-    {
-        switch (alarmStatus)
-        {
-            case ALARM, PENDING_ALARM -> {
-                securityRepository.noChangeToAlarm(alarmStatus, sensor,activationStatus);
-                return alarmStatus;}
-            default -> {
-                securityRepository.noChangeToAlarm(alarmStatus, sensor,activationStatus);
-                return AlarmStatus.NO_ALARM;
-            }
-        }
-}
+
 
     /**
      * Change the activation status for the specified sensor and update alarm status if necessary.
