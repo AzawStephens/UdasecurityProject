@@ -116,13 +116,9 @@ public class PretendDatabaseSecurityRepositoryImpl implements SecurityRepository
         return AlarmStatus.ALARM;
     }
 
-    @Override
-    public AlarmStatus noChangeToAlarm(AlarmStatus alarmStatus, Sensor sensor, Boolean activationStatus) {
-        return alarmStatus;
-    }
 
     @Override
-    public AlarmStatus catDetectedAlarmStatus(ImageServiceInterface imageService, ArmingStatus armedHome) {
+    public AlarmStatus catDetectedAlarmStatus(Boolean isThereACat) {
         return AlarmStatus.ALARM;
     }
 }

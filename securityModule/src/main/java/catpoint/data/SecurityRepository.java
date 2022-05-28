@@ -21,8 +21,7 @@ public interface SecurityRepository {
     AlarmStatus alarmStatus(ArmingStatus armingStatus, Sensor sensor, AlarmStatus alarmStatus);
     AlarmStatus noAlarmStatus(AlarmStatus alarmStatus, Set<Sensor> sensors);
     AlarmStatus sensorAlreadyActivated(Sensor sensor, boolean wishToActivate, AlarmStatus alarmStatus);
-    AlarmStatus noChangeToAlarm(AlarmStatus alarmStatus, Sensor sensor, Boolean activationStatus);
-    AlarmStatus catDetectedAlarmStatus(ImageServiceInterface imageService, ArmingStatus armedHome);
+    AlarmStatus catDetectedAlarmStatus(Boolean isThereACat);
 
 
 }

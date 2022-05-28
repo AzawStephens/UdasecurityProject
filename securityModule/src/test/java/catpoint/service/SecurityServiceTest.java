@@ -92,12 +92,9 @@ public class SecurityServiceTest {
     void alarmActive_ChangeInSensorMakesNoChanges_ReturnNoChangesToAlarmStatus(boolean status)
     {
 
-
             when(repository.getAlarmStatus()).thenReturn(AlarmStatus.ALARM);
             securityService.changeSensorActivationStatus(sensor, status);
             verify(repository, never()).setAlarmStatus(any(AlarmStatus.class));
-
-
     }
 
     @Test
@@ -120,6 +117,14 @@ public class SecurityServiceTest {
         Assertions.assertEquals(pendingAlarmStatus,securityService.sensorAlreadyActivated(sensor,wishToActivate,pendingAlarmStatus));
         verify(repository).sensorAlreadyActivated(sensor, wishToActivate,pendingAlarmStatus);
     }
-   // @Test
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void catDetected_SystemInAtHomeStatus_ReturnsALARMIfCatIsFound(boolean isCatDetected) //TEST 7
+    {
+        repository.setArmingStatus(ArmingStatus.ARMED_HOME);
+        when(repository.catDetectedAlarmStatus(isCatDetected)).thenReturn(AlarmStatus.ALARM);
+        securityService.catDetected(isCatDetected);
+        verify(repository).catDetectedAlarmStatus(isCatDetected);
+    }
 
 }

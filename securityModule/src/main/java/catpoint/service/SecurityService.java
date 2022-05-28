@@ -24,7 +24,7 @@ public class SecurityService {
     private ImageServiceInterface imageService;
     private SecurityRepository securityRepository;
     private Set<StatusListener> statusListeners = new HashSet<>();
-    private SecurityServiceInterface securityServiceInterface;
+
     public SecurityService(SecurityRepository securityRepository, ImageServiceInterface imageService) {
         this.securityRepository = securityRepository;
         this.imageService = imageService;
@@ -54,14 +54,20 @@ public class SecurityService {
      * the camera currently shows a cat.
      * @param cat True if a cat is detected, otherwise false.
      */
-    private void catDetected(Boolean cat) {
+    public AlarmStatus catDetected(Boolean cat) {
+        AlarmStatus alarmStatus;
         if(cat && getArmingStatus() == ArmingStatus.ARMED_HOME) {
+            securityRepository.catDetectedAlarmStatus(cat);
             setAlarmStatus(AlarmStatus.ALARM);
+            alarmStatus = AlarmStatus.ALARM;
         } else {
+            securityRepository.catDetectedAlarmStatus(cat);
             setAlarmStatus(AlarmStatus.NO_ALARM);
+            alarmStatus = AlarmStatus.NO_ALARM;
         }
 
         statusListeners.forEach(sl -> sl.catDetected(cat));
+        return alarmStatus;
     }
 
     /**
