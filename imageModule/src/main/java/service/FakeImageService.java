@@ -11,6 +11,8 @@ public class FakeImageService implements ImageServiceInterface{
 
     public boolean imageContainsCat(BufferedImage image, float confidenceThreshhold) {
 
+
+
         return r.nextBoolean();
     }
 }

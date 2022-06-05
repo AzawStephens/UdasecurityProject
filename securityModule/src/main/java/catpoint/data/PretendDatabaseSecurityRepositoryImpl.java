@@ -121,4 +121,19 @@ public class PretendDatabaseSecurityRepositoryImpl implements SecurityRepository
     public AlarmStatus catDetectedAlarmStatus(Boolean isThereACat) {
         return AlarmStatus.ALARM;
     }
+
+    @Override
+    public AlarmStatus noCatDetected(Boolean isThereACat, Set<Sensor> sensors) {
+        return AlarmStatus.NO_ALARM;
+    }
+
+    @Override
+    public AlarmStatus noAlarm(ArmingStatus armingStatus) {
+        return AlarmStatus.NO_ALARM;
+    }
+
+    @Override
+    public Set<Sensor> resetSensors(ArmingStatus armingStatus, Set<Sensor> sensors) {
+        return sensors;
+    }
 }

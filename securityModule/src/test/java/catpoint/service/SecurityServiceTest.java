@@ -14,6 +14,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import service.ImageServiceInterface;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import software.amazon.awssdk.services.rekognition.model.CreateStreamProcessorRequest;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -26,7 +27,7 @@ public class SecurityServiceTest {
 
     @Mock
     private SecurityRepository repository;
-    private SecurityService securityService =null;
+    private SecurityService securityService;
 
     private boolean active = true;
     private Sensor sensor = new Sensor();
@@ -37,7 +38,7 @@ public class SecurityServiceTest {
     @BeforeEach
     void init()
     {
-            securityService = new SecurityService(repository);
+            securityService = new SecurityService(repository, imageServiceInterface);
     }
 
 
@@ -46,10 +47,10 @@ public class SecurityServiceTest {
     void pendingStatus_alarmIsArmed_SensorIsActivated_SystemReturnsPendingStatus(ArmingStatus armingStatus) //TEST 1
     {
         sensor.setActive(active);
-        when(repository.pendingAlarmStatus(sensor, armingStatus)).thenReturn(AlarmStatus.PENDING_ALARM);
+       // when(repository.pendingAlarmStatus(sensor, armingStatus)).thenReturn(AlarmStatus.PENDING_ALARM);
         Assertions.assertEquals(AlarmStatus.PENDING_ALARM, securityService.changeToPending(sensor, armingStatus));
-        verify(repository).pendingAlarmStatus(sensor,armingStatus);
-        System.out.println("Pending status was returned");
+        verify(repository,atLeastOnce()).pendingAlarmStatus(sensor,armingStatus);
+
     }
 
     @ParameterizedTest
@@ -57,10 +58,10 @@ public class SecurityServiceTest {
     void setStatusToAlarm_AlarmIsArmed_SensorIsActivated_SystemAlreadyPending_ReturnsAlamStatus(ArmingStatus armingStatus) //TEST 2
     {
         sensor.setActive(active);
-        when(repository.alarmStatus(armingStatus,sensor,pendingAlarmStatus)).thenReturn(AlarmStatus.ALARM);
+       // when(repository.alarmStatus(armingStatus,sensor,pendingAlarmStatus)).thenReturn(AlarmStatus.ALARM);
         Assertions.assertEquals(AlarmStatus.ALARM, securityService.changeToAlarm(armingStatus,sensor,pendingAlarmStatus));
-        verify(repository).alarmStatus(armingStatus,sensor,pendingAlarmStatus);
-        System.out.println("Alarm status was returned");
+        verify(repository, atLeastOnce()).alarmStatus(armingStatus,sensor,pendingAlarmStatus);
+
     }
     @Test
     void setStatusToNoAlarm_AlarmInPendingMode_NoSensorsAreActive_ReturnNoAlarmStatus() //TEST 3
@@ -71,12 +72,12 @@ public class SecurityServiceTest {
         boolean notActive = false;
         sensor1.setActive(notActive);
         sensor2.setActive(notActive);
-        repository.addSensor(sensor1);
-        repository.addSensor(sensor2);
-       when(repository.noAlarmStatus(AlarmStatus.PENDING_ALARM,repository.getSensors())).thenReturn(AlarmStatus.NO_ALARM);
-       Assertions.assertEquals(AlarmStatus.NO_ALARM,securityService.noAlarmSet(AlarmStatus.PENDING_ALARM,repository.getSensors()));
-       verify(repository,times(2)).noAlarmStatus(AlarmStatus.PENDING_ALARM,repository.getSensors());
-       System.out.println("Alarm set to no alarm");
+       Set<Sensor> theSensors = new HashSet<>();
+       theSensors.add(sensor1);
+       theSensors.add(sensor2);
+     //  when(repository.noAlarmStatus(AlarmStatus.PENDING_ALARM,theSensors)).thenReturn(AlarmStatus.NO_ALARM);
+       Assertions.assertEquals(AlarmStatus.NO_ALARM,securityService.noAlarmSet(AlarmStatus.PENDING_ALARM,theSensors));
+      verify(repository, atLeastOnce()).noAlarmStatus(AlarmStatus.PENDING_ALARM,theSensors);
     }
 //    public static Stream<Arguments> createSensors()
 //    {
@@ -126,5 +127,57 @@ public class SecurityServiceTest {
         securityService.catDetected(isCatDetected);
         verify(repository).catDetectedAlarmStatus(isCatDetected);
     }
+    @Test
+    void noCatNoAlarm_NoSensorsActivated_ReturnNoAlarm() //Test 8
+    {
+        Sensor sensor1 = new Sensor("Back door", SensorType.DOOR);
+        Sensor sensor2 = new Sensor("Front window", SensorType.WINDOW);
+        boolean isActive = false;
+        boolean catDetected = false;
+        sensor1.setActive(isActive);
+        sensor2.setActive(isActive);
+        Set<Sensor> theSensors = new HashSet<>();
+        theSensors.add(sensor1);
+        theSensors.add(sensor2);
+        Assertions.assertEquals(AlarmStatus.NO_ALARM, securityService.noCatNoAlarmSet(catDetected,theSensors));
+
+    }
+    @Test
+    void noAlarm_systemDisarmed_ReturnNoAlarm() // TEST 9
+    {
+        ArmingStatus armingStatus = ArmingStatus.DISARMED;
+        Assertions.assertEquals(AlarmStatus.NO_ALARM,securityService.noAlarm(armingStatus));  //invokes the call to noAlarm
+        verify(repository, atLeastOnce()).noAlarm(armingStatus);
+    }
+    @ParameterizedTest
+    @EnumSource(value = ArmingStatus.class, names = {"ARMED_HOME", "ARMED_AWAY"})
+    void sensorReset_systemIsArmed_ReturnInactiveSensors(ArmingStatus armingStatus) //TEST 10
+    {
+            Sensor sensor1 = new Sensor("Back door", SensorType.DOOR);
+            Sensor sensor2 = new Sensor("Front sensor", SensorType.MOTION);
+            sensor1.setActive(true);
+            sensor2.setActive(true);
+            Set<Sensor> theSensors = new HashSet<>();
+            theSensors.add(sensor1);
+            theSensors.add(sensor2);
+            Assertions.assertEquals(theSensors,securityService.resetTheSensors(armingStatus, theSensors));
+            for(Sensor aSensor: theSensors)
+            {
+                verify(repository,atLeastOnce()).updateSensor(aSensor);
+            }
+    }
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void catDetectedAgain_SystemInAtHomeStatus_ReturnsALARMIfCatIsFound(boolean isCatDetected) //TEST 11
+    {
+        repository.setArmingStatus(ArmingStatus.ARMED_HOME);
+        when(repository.catDetectedAlarmStatus(isCatDetected)).thenReturn(AlarmStatus.ALARM);
+        securityService.catDetected(isCatDetected);
+        verify(repository).catDetectedAlarmStatus(isCatDetected);
+    }
+
+
+
+
 
 }

@@ -4,6 +4,7 @@ package catpoint.data;
 import com.google.common.collect.ComparisonChain;
 
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -68,6 +69,19 @@ public class Sensor implements Comparable<Sensor> {
     public void setSensorId(UUID sensorId) {
         this.sensorId = sensorId;
     }
+
+//    public boolean allSensorsStatuses(Set<Sensor> sensors)
+//    {
+//        boolean whatsTheStatus = true;
+//        for(Sensor sensor : sensors)
+//        {
+//            if (sensor.getActive().equals(false))
+//            {
+//                whatsTheStatus = false;
+//            }
+//        }
+//        return whatsTheStatus;
+//    }
 
     @Override
     public int compareTo(Sensor o) {
