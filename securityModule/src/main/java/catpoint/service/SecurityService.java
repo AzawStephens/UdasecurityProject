@@ -6,8 +6,6 @@ import catpoint.data.ArmingStatus;
 import catpoint.data.SecurityRepository;
 import catpoint.data.Sensor;
 import service.ImageServiceInterface;
-
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.util.HashSet;
 import java.util.Set;
@@ -28,11 +26,6 @@ public class SecurityService {
     public SecurityService(SecurityRepository securityRepository, ImageServiceInterface imageService) {
         this.securityRepository = securityRepository;
         this.imageService = imageService;
-    }
-
-    public SecurityService(){}
-    public SecurityService(SecurityRepository securityRepository) {
-        this.securityRepository = securityRepository;
     }
 
     /**
@@ -254,10 +247,6 @@ public Set<Sensor> resetTheSensors(ArmingStatus armingStatus, Set<Sensor> sensor
 
 
     public AlarmStatus getAlarmStatus() {
-      //  if(securityRepository.getArmingStatus().equals(ArmingStatus.DISARMED))
-        //{
-         //   securityRepository.setAlarmStatus(AlarmStatus.NO_ALARM);
-       // }
 
         return securityRepository.getAlarmStatus();
     }

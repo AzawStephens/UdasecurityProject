@@ -3,23 +3,18 @@ package catpoint.service;
 import catpoint.data.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.junit.jupiter.api.extension.ExtendWith;
 import service.ImageServiceInterface;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
-import software.amazon.awssdk.services.rekognition.model.CreateStreamProcessorRequest;
-
+import java.awt.image.BufferedImage;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Stream;
-
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -27,12 +22,14 @@ public class SecurityServiceTest {
 
     @Mock
     private SecurityRepository repository;
+
     private SecurityService securityService;
 
     private boolean active = true;
     private Sensor sensor = new Sensor();
     private AlarmStatus pendingAlarmStatus = AlarmStatus.PENDING_ALARM;
 
+    @Mock
     private ImageServiceInterface imageServiceInterface;
 
     @BeforeEach
@@ -47,7 +44,6 @@ public class SecurityServiceTest {
     void pendingStatus_alarmIsArmed_SensorIsActivated_SystemReturnsPendingStatus(ArmingStatus armingStatus) //TEST 1
     {
         sensor.setActive(active);
-       // when(repository.pendingAlarmStatus(sensor, armingStatus)).thenReturn(AlarmStatus.PENDING_ALARM);
         Assertions.assertEquals(AlarmStatus.PENDING_ALARM, securityService.changeToPending(sensor, armingStatus));
         verify(repository,atLeastOnce()).pendingAlarmStatus(sensor,armingStatus);
 
@@ -58,10 +54,8 @@ public class SecurityServiceTest {
     void setStatusToAlarm_AlarmIsArmed_SensorIsActivated_SystemAlreadyPending_ReturnsAlamStatus(ArmingStatus armingStatus) //TEST 2
     {
         sensor.setActive(active);
-       // when(repository.alarmStatus(armingStatus,sensor,pendingAlarmStatus)).thenReturn(AlarmStatus.ALARM);
         Assertions.assertEquals(AlarmStatus.ALARM, securityService.changeToAlarm(armingStatus,sensor,pendingAlarmStatus));
         verify(repository, atLeastOnce()).alarmStatus(armingStatus,sensor,pendingAlarmStatus);
-
     }
     @Test
     void setStatusToNoAlarm_AlarmInPendingMode_NoSensorsAreActive_ReturnNoAlarmStatus() //TEST 3
@@ -75,18 +69,9 @@ public class SecurityServiceTest {
        Set<Sensor> theSensors = new HashSet<>();
        theSensors.add(sensor1);
        theSensors.add(sensor2);
-     //  when(repository.noAlarmStatus(AlarmStatus.PENDING_ALARM,theSensors)).thenReturn(AlarmStatus.NO_ALARM);
        Assertions.assertEquals(AlarmStatus.NO_ALARM,securityService.noAlarmSet(AlarmStatus.PENDING_ALARM,theSensors));
       verify(repository, atLeastOnce()).noAlarmStatus(AlarmStatus.PENDING_ALARM,theSensors);
     }
-//    public static Stream<Arguments> createSensors()
-//    {
-//        return Stream.of(
-//                Arguments.of(new Sensor("Front Door", SensorType.DOOR)),
-//                Arguments.of(new Sensor("Back Door", SensorType.DOOR))
-//        );
-//
-//    }
 
    @ParameterizedTest
    @ValueSource(booleans = {true, false}) //TEST 4
@@ -118,14 +103,14 @@ public class SecurityServiceTest {
         Assertions.assertEquals(pendingAlarmStatus,securityService.sensorAlreadyActivated(sensor,wishToActivate,pendingAlarmStatus));
         verify(repository).sensorAlreadyActivated(sensor, wishToActivate,pendingAlarmStatus);
     }
-    @ParameterizedTest
-    @ValueSource(booleans = {true, false})
-    void catDetected_SystemInAtHomeStatus_ReturnsALARMIfCatIsFound(boolean isCatDetected) //TEST 7
+    @Test
+    void catDetected_SystemInAtHomeStatus_ReturnsALARMIfCatIsFound() //TEST 7
     {
-        repository.setArmingStatus(ArmingStatus.ARMED_HOME);
-        when(repository.catDetectedAlarmStatus(isCatDetected)).thenReturn(AlarmStatus.ALARM);
-        securityService.catDetected(isCatDetected);
-        verify(repository).catDetectedAlarmStatus(isCatDetected);
+        BufferedImage catImage = new BufferedImage(256, 256, BufferedImage.TYPE_INT_RGB);
+        when(repository.getArmingStatus()).thenReturn(ArmingStatus.ARMED_HOME);
+        when(imageServiceInterface.imageContainsCat(any(), ArgumentMatchers.anyFloat())).thenReturn(true);
+        securityService.processImage(catImage);
+        verify(repository, times(1)).setAlarmStatus(AlarmStatus.ALARM);
     }
     @Test
     void noCatNoAlarm_NoSensorsActivated_ReturnNoAlarm() //Test 8
@@ -140,7 +125,6 @@ public class SecurityServiceTest {
         theSensors.add(sensor1);
         theSensors.add(sensor2);
         Assertions.assertEquals(AlarmStatus.NO_ALARM, securityService.noCatNoAlarmSet(catDetected,theSensors));
-
     }
     @Test
     void noAlarm_systemDisarmed_ReturnNoAlarm() // TEST 9
@@ -166,18 +150,14 @@ public class SecurityServiceTest {
                 verify(repository,atLeastOnce()).updateSensor(aSensor);
             }
     }
-    @ParameterizedTest
-    @ValueSource(booleans = {true, false})
-    void catDetectedAgain_SystemInAtHomeStatus_ReturnsALARMIfCatIsFound(boolean isCatDetected) //TEST 11
+    @Test
+    void catDetectedAgain_SystemInAtHomeStatus_ReturnsALARMIfCatIsFound() //TEST 11
     {
-        repository.setArmingStatus(ArmingStatus.ARMED_HOME);
-        when(repository.catDetectedAlarmStatus(isCatDetected)).thenReturn(AlarmStatus.ALARM);
-        securityService.catDetected(isCatDetected);
-        verify(repository).catDetectedAlarmStatus(isCatDetected);
+        BufferedImage catImage = new BufferedImage(256, 256, BufferedImage.TYPE_INT_RGB);
+        when(imageServiceInterface.imageContainsCat(any(),anyFloat())).thenReturn(true);
+        when(repository.getArmingStatus()).thenReturn(ArmingStatus.DISARMED);
+        securityService.processImage(catImage);
+        securityService.setArmingStatus(ArmingStatus.ARMED_HOME);
+        verify(repository, times(1)).setAlarmStatus(AlarmStatus.ALARM);
     }
-
-
-
-
-
 }
