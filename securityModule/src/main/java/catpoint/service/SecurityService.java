@@ -37,7 +37,7 @@ public class SecurityService {
     public void setArmingStatus(ArmingStatus armingStatus) {
         if(armingStatus == ArmingStatus.DISARMED) {
             securityRepository.setAlarmStatus(AlarmStatus.NO_ALARM);
-        }
+        }else{securityRepository.setAlarmStatus(AlarmStatus.PENDING_ALARM);}
         securityRepository.setArmingStatus(armingStatus);
     }
 
@@ -71,9 +71,9 @@ public class SecurityService {
         statusListeners.add(statusListener);
     }
 
-    public void removeStatusListener(StatusListener statusListener) {
-        statusListeners.remove(statusListener);
-    }
+//    public void removeStatusListener(StatusListener statusListener) {
+//        statusListeners.remove(statusListener);
+//    }
 
     /**
      * Change the alarm status of the system and notify all listeners.
@@ -87,27 +87,26 @@ public class SecurityService {
     /**
      * Internal method for updating the alarm status when a sensor has been activated.
      */
-    private void handleSensorActivated(Sensor sensor, ArmingStatus armingStatus) {
-        if(securityRepository.getArmingStatus() == ArmingStatus.DISARMED) {
-            return; //no problem if the system is disarmed
-        }
-        switch(securityRepository.getAlarmStatus()) {
-            case NO_ALARM -> setAlarmStatus(AlarmStatus.PENDING_ALARM);
-            case PENDING_ALARM -> setAlarmStatus(AlarmStatus.ALARM);
-        }
-    }
+//    private void handleSensorActivated(Sensor sensor, ArmingStatus armingStatus) {
+//        if(securityRepository.getArmingStatus() == ArmingStatus.DISARMED) {
+//            return; //no problem if the system is disarmed
+//        }
+//        switch(securityRepository.getAlarmStatus()) {
+//            case NO_ALARM -> setAlarmStatus(AlarmStatus.PENDING_ALARM);
+//            case PENDING_ALARM -> setAlarmStatus(AlarmStatus.ALARM);
+//        }
+//    }
 
     /**
      * Internal method for updating the alarm status when a sensor has been deactivated
      */
     public void handleSensorDeactivated() {
-        switch(securityRepository.getAlarmStatus()) {
-            case PENDING_ALARM -> setAlarmStatus(AlarmStatus.NO_ALARM);
-            case ALARM -> setAlarmStatus(AlarmStatus.PENDING_ALARM);
-        }
+        try {
+            switch(securityRepository.getAlarmStatus()) {
+                case PENDING_ALARM -> setAlarmStatus(AlarmStatus.NO_ALARM);
+                case ALARM -> setAlarmStatus(AlarmStatus.PENDING_ALARM);}
+        }catch (NullPointerException exception){exception.getMessage();}
     }
-
-
 
     public AlarmStatus changeToPending(Sensor sensorStatus, ArmingStatus armingStatus) //Works with test 1
     {
@@ -116,46 +115,28 @@ public class SecurityService {
             return AlarmStatus.PENDING_ALARM;
         } else if (sensorStatus.getActive() && armingStatus.equals(ArmingStatus.ARMED_AWAY)) {
             securityRepository.pendingAlarmStatus(sensorStatus, armingStatus);
-            return AlarmStatus.PENDING_ALARM;
-        }
-        return AlarmStatus.NO_ALARM;
-    }
+            return AlarmStatus.PENDING_ALARM;}
+        return AlarmStatus.NO_ALARM;}
     public AlarmStatus changeToAlarm(ArmingStatus armingStatus, Sensor sensor, AlarmStatus alarmStatus) //Works with test 2
     {
-
         switch (armingStatus)
         {
             case ARMED_AWAY, ARMED_HOME -> {
-                if(sensor.getActive() && alarmStatus.equals(AlarmStatus.PENDING_ALARM))
-                {
+                if(sensor.getActive() && alarmStatus.equals(AlarmStatus.PENDING_ALARM)) {
                     securityRepository.alarmStatus(armingStatus,sensor,alarmStatus);
-                    return AlarmStatus.ALARM;
-                }break;
-            }
-
-        }
-
-        return AlarmStatus.NO_ALARM;
-    }
+                    return AlarmStatus.ALARM;}break;}
+            case DISARMED -> {return AlarmStatus.NO_ALARM;}
+        }return AlarmStatus.NO_ALARM;}
     public AlarmStatus noAlarmSet(AlarmStatus alarmStatus, Set<Sensor> sensors) //Works with test 3
-    {
-        for(Sensor sensor: sensors)
+    {for(Sensor sensor: sensors)
         {
             if(sensor.getActive()) //if a sensor is active
-            {
-                return  AlarmStatus.PENDING_ALARM;
-            }
+            {return  AlarmStatus.PENDING_ALARM;}
         }
         if(alarmStatus.equals(AlarmStatus.PENDING_ALARM))
-        {
-            securityRepository.noAlarmStatus(alarmStatus,sensors);
-            return AlarmStatus.NO_ALARM;
-        }
-        securityRepository.noAlarmStatus(alarmStatus,sensors);
-        return AlarmStatus.PENDING_ALARM;
-    }
-
-
+        {securityRepository.noAlarmStatus(alarmStatus,sensors);
+            return AlarmStatus.NO_ALARM;}securityRepository.noAlarmStatus(alarmStatus,sensors);
+        return AlarmStatus.PENDING_ALARM;}
 
 
     /**
@@ -167,7 +148,6 @@ public class SecurityService {
         if (getAlarmStatus() == AlarmStatus.PENDING_ALARM && !sensor.getActive()) {
             handleSensorDeactivated();
         } else if (getAlarmStatus() == AlarmStatus.ALARM && getArmingStatus() == ArmingStatus.DISARMED) {
-
             handleSensorDeactivated();
         }
 
@@ -226,7 +206,6 @@ public Set<Sensor> resetTheSensors(ArmingStatus armingStatus, Set<Sensor> sensor
         {
             aSensor.setActive(false);
             securityRepository.updateSensor(aSensor);
-
         }
     }
     return sensors;

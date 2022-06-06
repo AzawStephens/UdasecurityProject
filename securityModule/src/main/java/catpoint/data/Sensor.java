@@ -70,18 +70,7 @@ public class Sensor implements Comparable<Sensor> {
         this.sensorId = sensorId;
     }
 
-//    public boolean allSensorsStatuses(Set<Sensor> sensors)
-//    {
-//        boolean whatsTheStatus = true;
-//        for(Sensor sensor : sensors)
-//        {
-//            if (sensor.getActive().equals(false))
-//            {
-//                whatsTheStatus = false;
-//            }
-//        }
-//        return whatsTheStatus;
-//    }
+
 
     @Override
     public int compareTo(Sensor o) {

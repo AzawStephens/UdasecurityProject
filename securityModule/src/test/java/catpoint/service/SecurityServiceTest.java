@@ -1,5 +1,4 @@
 package catpoint.service;
-
 import catpoint.data.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -45,7 +44,7 @@ public class SecurityServiceTest {
     {
         sensor.setActive(active);
         Assertions.assertEquals(AlarmStatus.PENDING_ALARM, securityService.changeToPending(sensor, armingStatus));
-        verify(repository,atLeastOnce()).pendingAlarmStatus(sensor,armingStatus);
+       verify(repository,atLeastOnce()).pendingAlarmStatus(sensor,armingStatus);
 
     }
 
@@ -55,6 +54,7 @@ public class SecurityServiceTest {
     {
         sensor.setActive(active);
         Assertions.assertEquals(AlarmStatus.ALARM, securityService.changeToAlarm(armingStatus,sensor,pendingAlarmStatus));
+       Assertions.assertEquals(AlarmStatus.NO_ALARM, securityService.changeToAlarm(ArmingStatus.DISARMED,sensor,pendingAlarmStatus));
         verify(repository, atLeastOnce()).alarmStatus(armingStatus,sensor,pendingAlarmStatus);
     }
     @Test
@@ -159,5 +159,21 @@ public class SecurityServiceTest {
         securityService.processImage(catImage);
         securityService.setArmingStatus(ArmingStatus.ARMED_HOME);
         verify(repository, times(1)).setAlarmStatus(AlarmStatus.ALARM);
+    }
+    @Test
+    void setArmingStatus_changeArmingStatus_returnChangedArmingStatus()
+    {
+       securityService.setArmingStatus(ArmingStatus.DISARMED);
+       verify(repository).setAlarmStatus(AlarmStatus.NO_ALARM);
+    }
+    @ParameterizedTest
+    @EnumSource(value = AlarmStatus.class, names = {"PENDING_ALARM", "ALARM"})
+    void handleSensorDeactvated_runSensorDeactivated(AlarmStatus alarmStatus)
+    {
+        securityService.handleSensorDeactivated();
+        repository.setAlarmStatus(alarmStatus);
+        repository.getAlarmStatus();
+
+        verify(repository,atLeast(2)).getAlarmStatus();
     }
 }
